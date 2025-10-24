@@ -1,0 +1,1069 @@
+1) Basic setting to all devices + ssh + standard acl for ssh
+1.1 switch of each department       do for all switches
+ open switch               
+ enter CLI
+  
+   enable
+   conf t
+   
+   hostname Automotive-sw        put the dept name
+   
+line console 0
+password polytec
+login
+exec-timeout 3 0     
+exit
+  
+   enable password polytec     enter the password you choose
+  
+   banner motd #*** WARNING ***Unauthorized access to this device is prohibited!#     banner messages
+  
+   no ip domain-lookup      disable dns lookup
+   
+   service password-encryption
+   
+   username polytec password polytec      username and password for ssh config
+   ip domain-name poly.local                 you can use poly.local
+   crypto key generate rsa general-keys modulus 1024
+   
+   ip ssh version 2
+  
+   access-list 2 permit 192.168.10.0 255.255.255.0           allow the mannagement ip
+   access-list 2 deny any                                    deny other ip
+  
+   line vty 0 15
+   login local
+   transport input ssh
+   access-class 2 in
+   exit
+   do wr
+
+2) VLAN assignment plus all access and trunk ports on 12 and 13 switches
+  2.1) open HQ MLSW1/2  do for both mlsw  also for branch
+     CLI
+     enter password
+     enable
+     enter password
+     conf t
+     
+     vlan 10
+     name Management
+     vlan 20
+     name LAN
+     vlan 50
+     name WLAN
+     exit
+     
+     int range gig1/0/2-6
+     switchport mode trunk
+     exit
+     
+     int gig1/0/10
+     switchport mode access
+     switchport access vlan 50
+     exit
+     
+     do write
+     
+  2.2) open dept main branch switches do this config for all except IT
+    
+     vlan 10
+     name Management
+     vlan 20
+     name LAN
+     vlan 50
+     name WLAN
+     vlan 199
+     name BLACKHOLE
+     exit
+     
+     int range fa0/1-2
+     switchport mode trunk
+     ex
+     
+     int range fa0/3-20
+     switchport mode access
+     switchport access vlan 20
+     ex
+     
+     int range fa0/21-24
+     switchport mode access
+     switchport access vlan 50
+     ex
+     
+     int range gig0/1-2
+     switchport mode access
+     switchport access vlan 199
+     shut
+     ex
+     
+     do write
+    
+   2.3) open dept main branch IT switch
+    
+     vlan 10
+     name Management
+     vlan 20
+     name LAN
+     vlan 50
+     name WLAN
+     exit
+     
+     int range fa0/1-2
+     switchport mode trunk
+     ex
+     
+     int range fa0/3-20
+     switchport mode access
+     switchport access vlan 20
+     ex
+     
+     int range fa0/21-24
+     switchport mode access
+     switchport access vlan 50
+     ex
+     
+     int range gig0/1-2
+     switchport mode access
+     switchport access vlan 10
+     ex
+     
+     do write
+ 
+ 2.4) open branch dept switch
+    
+    
+     vlan 60
+     name BLAN
+     vlan 90
+     name BWLAN
+     vlan 199
+     name BLACKHOLE
+     exit
+     
+     int range fa0/1-2
+     switchport mode trunk
+     ex
+     
+     int range fa0/3-20
+     switchport mode access
+     switchport access vlan 60
+     ex
+     
+     int range fa0/21-24
+     switchport mode access
+     switchport access vlan 90
+     ex
+     
+     int range gig0/1-2
+     switchport mode access
+     switchport access vlan 199
+     shut
+     ex
+     
+     do write
+     
+ 2.5) do for branch MLSW1/2
+     
+     vlan 60
+     name BLAN
+     vlan 90
+     name BWLAN
+     vlan 199
+     name BLACKHOLE
+     exit
+     
+     int range gig1/0/2-5
+     switchport mode trunk
+     shut
+     ex
+     
+     do write
+ 
+ 
+ 
+ 2.6)  STP portfast and BPDUguard config on all access ports
+        do for all switch
+        
+        open dmz switch
+         int range fa0/2-24
+         spanning-tree portfast
+         spanning-tree bpduguard enable
+         ex
+         
+         do wr
+        
+        open HQ-MLSW1
+         choose  gig1/0/10  on/off
+         
+         interface GigabitEthernet1/0/10
+         spanning-tree portfast
+         spanning-tree bpduguard enable
+         ex
+         
+         do wr
+        
+        open main and branch dept switches
+         int range fa0/3-24
+         spanning-tree portfast
+         spanning-tree bpduguard enable
+         ex
+         
+         do wr
+    
+       open branch MLSW1/2
+       int range gig1/0/2-5
+       no shut
+        
+  3)  Ether channel      
+      
+      configure etherchannel
+      
+      open HQ-ML-SW1
+        
+        conf t
+        
+        int range gig1/0/21-23
+        channel-group 1 mode active
+         
+        interface Port-channel 1
+        switchport mode trunk
+        ex 
+        
+        do wr
+      
+      open HQ-ML-SW2
+        
+        conf t
+        
+        int range gig1/0/21-23
+        channel-group 1 mode passive
+        ex
+        interface Port-channel 1
+        switchport mode trunk
+        ex 
+        
+        do wr
+      
+      
+      
+      open branch-ML-SW1
+        
+        conf t
+        
+        int range gig1/0/21-23
+        channel-group 2 mode active
+         
+        interface Port-channel 2
+        switchport mode trunk
+        ex 
+        
+        do wr
+      
+      open Branch-ML-SW2
+        
+        conf t
+        
+        int range gig1/0/21-23
+        channel-group 2 mode passive
+        ex
+        interface Port-channel 2
+        switchport mode trunk
+        ex 
+        
+        do wr
+        
+      open HQ-MLSW
+        end
+        show etherchannel port-channel
+    
+    
+   4) subnetting and IP addressing
+     
+        1st open HQ-MLSW1    make it act as sw and router
+        
+           conf t
+           ip routing
+           int gig1/0/1
+           no switchport
+           ip add 10.20.20.33 255.255.255.252
+           ex 
+           do wr
+           
+         
+         2nd open HQ-MLSW2    make it act as sw and router
+         
+           conf t
+           ip routing
+           int gig1/0/1
+           no switchport
+           ip add 10.20.20.37 255.255.255.252
+           ex 
+           do wr
+           
+         
+         3rd open B-MLSW1    make it act as sw and router
+         
+           conf t
+           ip routing
+           int gig1/0/1
+           no switchport
+           ip add 10.20.20.41 255.255.255.252
+           ex 
+           do wr
+          
+          
+          4th open B-MLSW2    make it act as sw and router
+          
+           conf t
+           ip routing
+           int gig1/0/1
+           no switchport
+           ip add 10.20.20.45 255.255.255.252
+           ex 
+           do wr
+           
+           
+          5th open HQ-ISP
+          
+          choose gig0/0
+               IP CONFIG   
+                    IPv4 address 105.100.50.1
+                    subnet mask  255.255.255.252
+         choose serial0/3/0
+               IP CONFIG
+                     ipv4     20.20.20.2
+                     subnet   255.255.255.252
+                     
+                     
+         6th open INTERNET
+         
+             choose serial0/3/0
+                      ip   20.20.20.1
+                      subnet 255.255.255.252
+             choose serial0/3/1
+                      ip   30.30.30.1
+                      subnet 255.255.255.252        
+             choose gig0/0
+                      ip   8.0.0.1
+                      subnet 255.0.0.0
+                     
+                     
+         7th   open branch ISP
+         
+         choose serial0/3/0
+                      ip   30.30.30.2
+                      subnet 255.255.255.252        
+         choose gig0/0
+                      ip   205.200.100.1
+                      subnet 255.255.255.252
+                      
+        8th open HQ-FWL
+           
+           en
+           conf t
+           
+           int gig1/1
+           no shut
+          
+           nameif INSIDE1
+           security-level 100
+           
+           ip add 10.20.20.34 255.255.255.252
+           ex
+           
+           int gig1/2
+           no shut
+           
+           nameif INSIDE2
+           security-level 100
+           
+           ip add 10.20.20.38 255.255.255.252
+           ex
+           
+           int gig1/3
+           no shut
+           
+           nameif DMZ
+           security-level 70
+           
+           ip add 10.20.20.1 255.255.255.224
+           ex
+           
+           int gig1/4
+           no shut
+           
+           nameif OUTSIDE
+           security-level 0
+           
+           ip add 105.100.50.2 255.255.255.252
+           ex
+           
+           wr mem
+           
+          9th open B-FWL
+           
+           en
+           conf t
+           
+int gig1/1
+no shut
+          
+nameif INSIDE1
+security-level 100
+           
+ip add 10.20.20.42 255.255.255.252
+ex
+           
+int gig1/2
+no shut
+           
+nameif INSIDE2
+security-level 100
+           
+ip add 10.20.20.46 255.255.255.252
+ex
+           
+int gig1/3
+no shut
+           
+nameif OUTSIDE
+security-level 0
+           
+ip add 205.200.100.2 255.255.255.252
+ex
+           
+           do wr
+           wr mem
+     
+   5) static IP address to DMZ/server farm devices
+    
+        open DHCP-1
+        DESKTOP-->IP config
+            ip add 10.20.20.5
+    	     subnet mask 255.255.255.224
+    	     default gate 10.20.20.1
+    	     DNS server 10.20.20.7
+    	
+    	open DHCP-2
+        DESKTOP-->IP config
+            ip add 10.20.20.6
+    	     subnet mask 255.255.255.224
+    	     default gate 10.20.20.1
+    	     DNS server 10.20.20.7
+    
+       open DNS
+        DESKTOP-->IP config
+            ip add 10.20.20.7
+    	     subnet mask 255.255.255.224
+    	     default gate 10.20.20.1
+    	     DNS server 10.20.20.7
+     
+      open WEB
+        DESKTOP-->IP config
+            ip add 10.20.20.8
+    	     subnet mask 255.255.255.224
+    	     default gate 10.20.20.1
+    	     DNS server 10.20.20.7
+     
+      open EMAIL
+        DESKTOP-->IP config
+            ip add 10.20.20.9
+    	     subnet mask 255.255.255.224
+    	     default gate 10.20.20.1
+    	     DNS server 10.20.20.7
+      
+      open FTP
+        DESKTOP-->IP config
+            ip add 10.20.20.10
+    	     subnet mask 255.255.255.224
+    	     default gate 10.20.20.1
+    	     DNS server 10.20.20.7
+    
+   6) DHCP server device configuration
+         start from 2:10:00
+          
+         open DHCP 1
+         check ip , ping
+         
+         go to services--> DHCP  ON
+           
+             server pool make ip and subnet 0000 and save
+        
+          create pool
+               Pool Name HQMGTPool
+               Default gateway 192.168.10.1
+               DNS Server 10.20.20.7
+               start ip address 192.168.10.11
+               subnet mask 255.255.255.0
+               max no user 200
+               add
+         
+         create pool
+               Pool Name HQLANPool
+               Default gateway 172.16.0.1
+               DNS Server 10.20.20.7
+               start ip address 172.16.0.11
+               subnet mask 255.255.0.0
+               max no user 60000
+               add
+         
+         create pool
+               Pool Name HQWLANPool
+               Default gateway 10.10.0.1
+               DNS Server 10.20.20.7
+               start ip address 10.10.0.11
+               subnet mask 255.255.255.0
+               max no user 60000
+               WLC Address 10.10.0.15
+               add
+         
+         
+       
+         create pool
+               Pool Name BRLANPool
+               Default gateway 172.17.0.1
+               DNS Server 10.20.20.7
+               start ip address 172.17.0.11
+               subnet mask 255.255.0.0
+               max no user 60000
+               add
+         
+         create pool
+               Pool Name BRWLANPool
+               Default gateway 10.11.0.1
+               DNS Server 10.20.20.7
+               start ip address 10.11.0.11
+               subnet mask 255.255.255.0
+               max no user 60000
+               WLC Address 10.10.0.15
+               add
+        
+        
+        copy the configured DHCP1 and make it DHCP 2
+           CHANGE ip address to    10.20.20.6
+           
+   
+   
+   7) HSRP and inter-VLAN routing on the 13 switches pls ip dhcp helper addresses
+         
+         open HQMLSW1
+       
+int vlan 10
+ip add 192.168.10.3 255.255.255.0
+ip helper-address 10.20.20.5
+ip helper-address 10.20.20.6
+standby 10 ip 192.168.10.1
+standby 10 priority 110
+standby 10 preempt
+exit
+              
+int vlan 20
+ip add 172.16.0.3 255.255.0.0
+ip helper-address 10.20.20.5
+ip helper-address 10.20.20.6
+standby 20 ip 172.16.0.1
+standby 20 priority 110
+standby 20 preempt
+exit
+              
+int vlan 50
+ip add 10.10.0.3 255.255.0.0
+ip helper-address 10.20.20.5
+ip helper-address 10.20.20.6
+standby 50 ip 10.10.0.1
+standby 50 priority 110
+standby 50 preempt
+exit
+              
+do write
+             
+            open HQMLSW2
+       
+int vlan 10
+ip add 192.168.10.2 255.255.255.0
+ip helper-address 10.20.20.5
+ip helper-address 10.20.20.6
+standby 10 ip 192.168.10.1
+standby 10 priority 100
+standby 10 preempt
+exit
+              
+int vlan 20
+ip add 172.16.0.2 255.255.0.0
+ip helper-address 10.20.20.5
+ip helper-address 10.20.20.6
+standby 20 ip 172.16.0.1
+standby 20 priority 100
+standby 20 preempt
+exit
+              
+int vlan 50
+ip add 10.10.0.2 255.255.0.0
+ip helper-address 10.20.20.5
+ip helper-address 10.20.20.6
+standby 50 ip 10.10.0.1
+standby 50 priority 100
+standby 50 preempt
+exit
+              
+do write
+              
+              open BHQMLSW1
+       
+int vlan 60
+ip add 172.17.0.3 255.255.0.0
+ip helper-address 10.20.20.5
+ip helper-address 10.20.20.6
+standby 60 ip 172.17.0.1
+standby 60 priority 110
+standby 60 preempt
+exit
+              
+int vlan 90
+ip add 10.11.0.3 255.255.0.0
+ip helper-address 10.20.20.5
+ip helper-address 10.20.20.6
+standby 90 ip 10.11.0.1
+standby 90 priority 110
+standby 90 preempt
+exit
+
+do wr
+              
+              open BHQMLSW2
+       
+int vlan 60
+ip add 172.17.0.2 255.255.0.0
+ip helper-address 10.20.20.5
+ip helper-address 10.20.20.6
+standby 60 ip 172.17.0.1
+standby 60 priority 100
+standby 60 preempt
+exit
+              
+int vlan 90
+ip add 10.11.0.2 255.255.0.0
+ip helper-address 10.20.20.5
+ip helper-address 10.20.20.6
+standby 90 ip 10.11.0.1
+standby 90 priority 100
+standby 90 preempt
+exit
+
+do wr              
+       
+       8)  OSPF on the firewall, routers and switches.
+       
+            open HQMLSW1
+            
+            conf t
+router ospf 15
+router-id 2.1.2.1
+network 10.20.20.32 0.0.0.3 area 0
+network 192.168.10.0 0.0.0.255 area 0
+network 172.16.0.0 0.0.255.255 area 0
+network 10.10.0.0 0.0.255.255 area 0
+ex
+            
+do wr
+            
+            
+            
+            do sh stat      or star
+                copy ospf entry
+            
+            open HQMLSW2                                   .32 is 36  in the video 36
+            conf t
+            !
+router ospf 15
+router-id 3.1.3.1
+network 10.20.20.36 0.0.0.3 area 0
+network 192.168.10.0 0.0.0.255 area 0
+network 172.16.0.0 0.0.255.255 area 0
+network 10.10.0.0 0.0.255.255 area 0
+            !
+            do wr
+            
+            
+            open BMLSW1
+            
+            conf t
+            !
+router ospf 15
+router-id 4.1.4.1
+network 10.20.20.40 0.0.0.3 area 0
+network 172.17.0.0 0.0.255.255 area 0
+network 10.11.0.0 0.0.255.255 area 0
+            !
+            ex
+            
+            do wr
+            
+            open BMLSW2
+            
+            conf t
+            !
+router ospf 15
+router-id 5.1.5.1
+network 10.20.20.44 0.0.0.3 area 0
+network 172.17.0.0 0.0.255.255 area 0
+network 10.11.0.0 0.0.255.255 area 0
+            !
+            ex
+            
+            do wr
+            
+            
+            open HQISP
+            
+            conf t
+            !
+router ospf 15
+router-id 7.1.7.1
+network 105.100.50.0 0.0.0.3 area 0
+network 20.20.20.0 0.0.0.3 area 0
+            !
+            
+            do wr
+            
+            open INTERNET
+            
+            conf t
+            !
+router ospf 15
+router-id 8.1.8.1
+network 30.30.30.0 0.0.0.3 area 0
+network 20.20.20.0 0.0.0.3 area 0
+            !
+            
+            do wr
+            
+            open BISP
+            
+            conf t
+            !
+router ospf 15
+router-id 9.1.9.1
+network 30.30.30.0 0.0.0.3 area 0
+network 205.200.100.0 0.0.0.3 area 0
+            !
+            
+            do wr
+            
+            
+            open  HQ-FWL
+            
+router ospf 15
+router-id 3.2.4.1
+network 105.100.50.0 255.255.255.252 area 0
+network 10.20.20.0 255.255.255.224 area 0
+network 10.20.20.32 255.255.255.252 area 0
+network 10.20.20.36 255.255.255.252 area 0
+ex
+
+wr me
+            
+            
+            open  B-FWL
+            
+router ospf 15
+router-id 4.3.2.1
+network 205.200.100.0 255.255.255.252 area 0
+network 10.20.20.40 255.255.255.252 area 0
+network 10.20.20.44 255.255.255.252 area 0
+ex
+            
+wr mem
+            
+            
+   9) Firewall interface security zones ande levels
+      2:43
+       we did it when ip addressing
+   
+   10) firewall inspection policy configuration
+   
+          create object net and associat it with NAT
+          
+          
+            default static route
+          open HQ-FWL
+             
+             en
+             conf t
+             route OUTSIDE 0.0.0.0 0.0.0.0 105.100.50.1
+             
+          open B-FWL
+             
+             en
+             conf t
+             route OUTSIDE 0.0.0.0 0.0.0.0 205.200.100.1
+               
+           
+         open HQ-FWL
+           
+object network INSIDE1-OUTSIDE
+subnet 192.168.10.0 255.255.255.0
+nat (INSIDE1,OUTSIDE) dynamic interface
+ex
+           
+           conf t
+object network INSIDE1a-OUTSIDE
+subnet 192.168.10.0 255.255.255.0
+nat (INSIDE2,OUTSIDE) dynamic interface
+ex
+           
+conf t
+          
+          
+object network INSIDE2-OUTSIDE
+subnet 172.16.0.0 255.255.0.0
+nat (INSIDE1,OUTSIDE) dynamic interface
+           
+        
+object network INSIDE2a-OUTSIDE
+subnet 172.16.0.0 255.255.0.0
+nat (INSIDE2,OUTSIDE) dynamic interface
+ex
+           
+conf t
+object network INSIDE3-OUTSIDE
+subnet 10.10.0.0 255.255.0.0
+nat (INSIDE1,OUTSIDE) dynamic interface
+ex
+           
+           conf t
+object network INSIDE3a-OUTSIDE
+subnet 10.10.0.0 255.255.0.0
+nat (INSIDE2,OUTSIDE) dynamic interface
+ex
+           
+           wr mem
+           
+           
+         open B-FWL
+            
+object network INSIDE1-OUTSIDE
+subnet 10.11.0.0 255.255.0.0
+nat (INSIDE1,OUTSIDE) dynamic interface
+ex
+conf t
+object network INSIDE1a-OUTSIDE
+subnet 10.11.0.0 255.255.0.0
+nat (INSIDE2,OUTSIDE) dynamic interface
+ex
+conf t
+object network INSIDE2-OUTSIDE
+subnet 172.17.0.0 255.255.0.0
+nat (INSIDE1,OUTSIDE) dynamic interface
+ex
+conf t
+object network INSIDE2a-OUTSIDE
+subnet 172.17.0.0 255.255.0.0
+nat (INSIDE2,OUTSIDE) dynamic interface
+ex
+wr mem
+            
+               
+                 create inspection policy
+          
+          
+              open HQ-FWL
+              
+              conf t
+access-list RES-ACCESS EXtended PERmit icmp any any
+access-list RES-ACCESS EXtended PERmit udp any any eq 67
+access-list RES-ACCESS EXtended PERmit udp any any eq 68
+access-list RES-ACCESS EXtended PERmit udp any any eq 53
+access-list RES-ACCESS EXtended PERmit tcp any any eq 53
+access-list RES-ACCESS EXtended PERmit tcp any any eq 80
+access-list RES-ACCESS EXtended PERmit tcp any any eq 25
+access-list RES-ACCESS EXtended PERmit tcp any any eq 20
+access-list RES-ACCESS EXtended PERmit tcp any any eq 21
+              
+              
+access-group RES-ACCESS in interface DMZ
+access-group RES-ACCESS in interface OUTSIDE
+              
+wr mem
+              
+              
+              
+              open B-FWL
+              
+              conf t
+access-list RES-ACCESS EXtended PERmit icmp any any
+access-list RES-ACCESS EXtended PERmit udp any any eq 67
+access-list RES-ACCESS EXtended PERmit udp any any eq 68
+access-list RES-ACCESS EXtended PERmit udp any any eq 53
+access-list RES-ACCESS EXtended PERmit tcp any any eq 53
+access-list RES-ACCESS EXtended PERmit tcp any any eq 80
+access-list RES-ACCESS EXtended PERmit tcp any any eq 25
+access-list RES-ACCESS EXtended PERmit tcp any any eq 20
+access-list RES-ACCESS EXtended PERmit tcp any any eq 21
+              
+              
+access-group RES-ACCESS in interface OUTSIDE
+              
+              wr mem
+              
+              
+              testing 3:05:00
+              
+              
+             open HQ-WLC 
+              config--> management 
+                           ip 10.10.0.15
+                           subnet 255.255.0.0
+                           default 10.10.0.1
+                           dns 10.20.20.7
+            
+            
+             open MGT PC1 
+                ping 10.10.0.15
+                
+                go to  web browse enter 10.10.0.15 go
+                      create admin account
+                       3:12     start from here
+                       
+                       
+                       
+  
+  
+  
+     open HQ-FWL                        
+ enable capwap port
+ 
+access-list RES-ACCESS EXtended PERmit udp any any eq 5246
+access-list RES-ACCESS EXtended PERmit udp any any eq 5247
+ 
+access-list RES-ACCESS EXtended PERmit udp any any eq 12222
+access-list RES-ACCESS EXtended PERmit udp any any eq 12223
+ 
+wr mem
+
+
+
+START FROM 3:36
+
+
+
+
+
+
+
+
+
+12) IPAEC VPN TUNNEL
+
+open HQ-FWL
+
+!
+crypto ikev1 policy 10
+
+hash sha
+authentication pre-share
+
+group 2
+lifetime 86400
+encryption 3des
+
+exit
+ 
+!
+tunnel-group 205.200.100.2 type ipsec-l2l
+tunnel-group 205.200.100.2 ipsec-attributes
+ikev1 pre-shared-key cisco
+
+!
+
+crypto ipsec ikev1 transform-set TSET esp-3des esp-sha-hmac
+
+
+!
+
+access-list VPN-ACL permit ip 172.17.0.0 255.255.0.0 192.168.10.0 255.255.255.0
+access-list VPN-ACL permit ip 10.11.0.0 255.255.0.0 192.168.10.0 255.255.255.0
+
+access-list VPN-ACL permit ip 172.17.0.0 255.255.0.0 172.16.0.0 255.255.0.0
+access-list VPN-ACL permit ip 10.11.0.0 255.255.0.0 172.16.0.0 255.255.0.0
+
+access-list VPN-ACL permit ip 172.17.0.0 255.255.0.0 10.10.0.0 255.255.0.0
+
+
+access-list VPN-ACL permit ip 10.11.0.0 255.255.0.0 10.10.0.0 255.255.0.0
+
+access-list VPN-ACL permit ip 172.17.0.0 255.255.0.0 10.20.20.0 255.255.255.224
+access-list VPN-ACL permit ip 10.11.0.0 255.255.0.0 10.20.20.0 255.255.255.224
+
+
+!
+
+crypto map CMAP 10 set peer 205.200.100.2
+
+crypto map CMAP 10 set ikev1 transform-set TSET
+
+crypto map CMAP 10 match address VPN-ACL
+
+!
+crypto map CMAP interface outside
+crypto ikev1 enable outside
+
+wr mem
+
+
+
+open B-FWL
+
+!
+crypto ikev1 policy 10
+
+hash sha
+authentication pre-share
+
+group 2
+lifetime 86400
+encryption 3des
+
+exit
+ 
+!
+tunnel-group 105.100.50.2 type ipsec-l2l
+tunnel-group 105.100.50.2 ipsec-attributes
+ikev1 pre-shared-key cisco
+
+!
+
+crypto ipsec ikev1 transform-set TSET esp-3des esp-sha-hmac
+
+
+!
+
+access-list VPN-ACL permit ip 192.168.10.0 255.255.255.0 172.17.0.0 255.255.0.0
+access-list VPN-ACL permit ip 192.168.10.0 255.255.255.0 10.11.0.0 255.255.0.0
+
+access-list VPN-ACL permit ip 172.16.0.0 255.255.0.0 172.17.0.0 255.255.0.0
+access-list VPN-ACL permit ip 172.16.0.0 255.255.0.0 10.11.0.0 255.255.0.0
+
+access-list VPN-ACL permit ip 10.10.0.0 255.255.0.0 172.17.0.0 255.255.0.0
+
+
+access-list VPN-ACL permit ip 10.10.0.0 255.255.0.0 10.11.0.0 255.255.0.0
+
+access-list VPN-ACL permit ip 10.20.20.0 255.255.255.224 172.17.0.0 255.255.0.0
+access-list VPN-ACL permit ip 10.20.20.0 255.255.255.224 10.11.0.0 255.255.0.0
+
+
+!
+
+crypto map CMAP 10 set peer 105.100.50.2
+
+crypto map CMAP 10 set ikev1 transform-set TSET
+
+crypto map CMAP 10 match address VPN-ACL
+
+!
+crypto map CMAP interface outside
+crypto ikev1 enable outside
+
+wr mem
