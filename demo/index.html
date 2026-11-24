@@ -365,12 +365,15 @@ const data = {
   edges: new vis.DataSet(edgeData)
 };
 const options = {
-  physics:{ enabled:true, stabilization:{iterations:100}, repulsion:{nodeDistance:120, springLength:120} },
-  interaction:{ hover:true, tooltipDelay:0 },
-  edges:{ font:{size:9,color:'#64748b',face:'Fira Code'}, smooth:{type:'curvedCW',roundness:0.1}, arrows:{to:{enabled:false}} },
-  nodes:{ borderWidth:2, shadow:true, margin:10, font:{size:11,face:'Fira Code'} }
+  physics:{ enabled:false },
+  interaction:{ hover:true, tooltipDelay:200, zoomView:true, dragView:true },
+  edges:{ font:{size:9,color:'#64748b',face:'Fira Code',strokeWidth:0}, smooth:{type:'curvedCW',roundness:0.15}, arrows:{to:{enabled:false}} },
+  nodes:{ borderWidth:2, shadow:{enabled:true,color:'rgba(0,0,0,0.5)',size:8}, margin:10, font:{size:11,face:'Fira Code'} },
+  layout:{ randomSeed: 2 }
 };
 const network = new vis.Network(container, data, options);
+// Fit view after a short delay to ensure canvas is ready
+setTimeout(function(){ network.fit({ animation: { duration: 800, easingFunction: 'easeInOutQuad' } }); }, 300);
 
 // Click handler
 network.on('click', params => {
@@ -430,7 +433,8 @@ function showSideTab(id) {
   });
 }
 
-network.once('stabilized', () => { network.fit(); physicsOn = false; network.setOptions({physics:{enabled:false}}); });
+var physicsOn = false;
+
 </script>
 </body>
 </html>
