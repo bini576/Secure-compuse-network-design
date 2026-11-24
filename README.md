@@ -1,6 +1,6 @@
 <div align="center">
 
-# ðŸŒ Enterprise Secure Campus Network Design & Architecture
+# 🌐 Enterprise Secure Campus Network Design & Architecture
 ### Multi-Tier High-Availability Campus Infrastructure with Micro-Segmentation, ACLs & Threat Hardening
 
 [![Cisco Packet Tracer](https://img.shields.io/badge/Simulation-Cisco%20Packet%20Tracer-1BA0D7?style=for-the-badge&logo=cisco&logoColor=white)](https://www.netacad.com/courses/packet-tracer)
@@ -9,11 +9,11 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](https://opensource.org/licenses/MIT)
 
 <p align="center">
-  <a href="#-project-overview">Overview</a> â€¢
-  <a href="#-internship-context">Internship Context</a> â€¢
-  <a href="#-hierarchical-network-topology">Topology</a> â€¢
-  <a href="#-security-policies--hardening">Security Policies</a> â€¢
-  <a href="#-configuration-highlights">Configuration Highlights</a> â€¢
+  <a href="#-project-overview">Overview</a> •
+  <a href="#-internship-context">Internship Context</a> •
+  <a href="#-hierarchical-network-topology">Topology</a> •
+  <a href="#-security-policies--hardening">Security Policies</a> •
+  <a href="#-configuration-highlights">Configuration Highlights</a> •
   <a href="#-tools--simulation-files">Tools & Files</a>
 </p>
 
@@ -21,7 +21,7 @@
 
 ---
 
-## ðŸ“Œ Project Overview
+## 📌 Project Overview
 
 **Enterprise Secure Campus Network Design** is an end-to-end, defense-in-depth network architecture engineered for modern higher education institutions. The project designs, simulates, and validates a robust campus-wide enterprise network that isolates untrusted traffic, ensures high availability, enforces strict administrative access controls, and mitigates layer-2 and layer-3 attack vectors.
 
@@ -29,9 +29,9 @@ Simulated entirely in **Cisco Packet Tracer**, this architecture addresses the r
 
 ---
 
-## ðŸ›ï¸ Internship Context & Institutional Scope
+## 🏛️ Internship Context & Institutional Scope
 
-During my role as an **IT Security Intern at Jinka Polytechnic College â€” ICT Directorate (July â€“ September 2025)**, I conducted audits of the college's physical and logical network infrastructure. 
+During my role as an **IT Security Intern at Jinka Polytechnic College — ICT Directorate (July – September 2025)**, I conducted audits of the college's physical and logical network infrastructure. 
 
 ### Core Challenges Addressed:
 1. **Flat Network Vulnerabilities:** The legacy setup lacked internal segmentation, exposing administrative records to general student traffic.
@@ -42,41 +42,41 @@ This repository represents the **validated architectural blueprint and Cisco IOS
 
 ---
 
-## ðŸ—ºï¸ Hierarchical Network Topology
+## 🗺️ Hierarchical Network Topology
 
 The architecture follows the industry-standard **Cisco Three-Tier Hierarchical Model** to guarantee modular scalability, performance predictability, and fault isolation:
 
 ```
                       [ WAN / Internet Gateway ISP ]
-                                    â”‚
-                                    â–¼
-                          â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
-                          â”‚   Edge Firewall  â”‚
-                          â”‚   & Border NAT   â”‚
-                          â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”˜
-                                    â”‚
+                                    │
+                                    ▼
+                          ┌──────────────────┐
+                          │   Edge Firewall  │
+                          │   & Border NAT   │
+                          └─────────┬────────┘
+                                    │
                          === CORE LAYER ===
-                  â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
-                  â”‚   High-Speed Redundant Core   â”‚
-                  â”‚   Switches (Multi-Gigabit L3) â”‚
-                  â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
-                            â”‚           â”‚
+                  ┌───────────────────────────────┐
+                  │   High-Speed Redundant Core   │
+                  │   Switches (Multi-Gigabit L3) │
+                  └─────────┬───────────┬─────────┘
+                            │           │
                      === DISTRIBUTION LAYER ===
-               â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”´â”€â”€â”€â”   â”Œâ”€â”€â”€â”´â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
-               â”‚ Admin Distro   â”‚   â”‚ Academic Distroâ”‚
-               â”‚ L3 Aggregation â”‚   â”‚ L3 Aggregation â”‚
-               â””â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”˜   â””â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”˜
-                        â”‚                    â”‚
+               ┌────────────┴───┐   ┌───┴────────────┐
+               │ Admin Distro   │   │ Academic Distro│
+               │ L3 Aggregation │   │ L3 Aggregation │
+               └────────┬───────┘   └────────┬───────┘
+                        │                    │
                         === ACCESS LAYER ===
-         â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”    â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
-         â–¼                              â–¼    â–¼                              â–¼
+         ┌──────────────┴───────────────┐    ┌──────────────────────────────┐
+         ▼                              ▼    ▼                              ▼
   [ Admin VLAN 10 ]            [ Finance VLAN 20 ]  [ Lab VLAN 30 ]  [ Guest Wi-Fi VLAN 50 ]
   (Registrar / Dean)          (Secured Server Zone) (Isolated Sandbox) (Captive Portal NAT)
 ```
 
 ---
 
-## ðŸ›¡ï¸ Security Policies & Hardening Matrix
+## 🛡️ Security Policies & Hardening Matrix
 
 | Security Feature | Implementation Mechanism | Threat Mitigated |
 |:---|:---|:---|
@@ -90,7 +90,7 @@ The architecture follows the industry-standard **Cisco Three-Tier Hierarchical M
 
 ---
 
-## âš™ï¸ Configuration Highlights (Cisco IOS)
+## ⚙️ Configuration Highlights (Cisco IOS)
 
 ### 1. VLAN Definition & Access Port Hardening
 ```cisco
@@ -134,18 +134,18 @@ ip access-list extended ACL_PROTECT_FINANCE
 
 ---
 
-## ðŸ› ï¸ Tools & Simulation Files
+## 🛠️ Tools & Simulation Files
 
 - **Simulation Engine:** Cisco Packet Tracer v8.2+
 - **Protocol Analysis:** Wireshark (packet validation across trunk links)
 - **Included Artifacts:**
-  - `campus_topology.pkt` â€” Complete interactive Packet Tracer simulation file.
-  - `configs/` â€” Full running configurations for Core, Distribution, and Access switches.
-  - `documentation/` â€” IP Addressing scheme, subnet allocation sheets, and VLAN dictionaries.
+  - `campus_topology.pkt` — Complete interactive Packet Tracer simulation file.
+  - `configs/` — Full running configurations for Core, Distribution, and Access switches.
+  - `documentation/` — IP Addressing scheme, subnet allocation sheets, and VLAN dictionaries.
 
 ---
 
-## ðŸ“¸ Screenshots & Topology Diagram
+## 📸 Screenshots & Topology Diagram
 
 <div align="center">
 
@@ -171,7 +171,7 @@ ip access-list extended ACL_PROTECT_FINANCE
 
 ---
 
-## ðŸ“„ License & Author
+## 📄 License & Author
 
 Distributed under the **MIT License**.
 
