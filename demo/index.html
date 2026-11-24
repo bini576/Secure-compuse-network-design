@@ -34,10 +34,9 @@ nav{background:rgba(13,17,23,0.98);border-bottom:1px solid var(--border);padding
 .legend-item{display:flex;align-items:center;gap:7px;font-size:0.78rem;color:#94a3b8;cursor:pointer;padding:5px 12px;border-radius:8px;border:1px solid transparent;transition:all 0.2s}
 .legend-item:hover{background:rgba(255,255,255,0.04);border-color:var(--border)}
 .legend-dot{width:12px;height:12px;border-radius:50%;flex-shrink:0}
-/* Main layout */
 .main{display:flex;flex:1;overflow:hidden;height:calc(100vh - 220px);min-height:500px}
-#network-container{flex:1;background:var(--bg);position:relative;border-right:1px solid var(--border)}
-#mynetwork{width:100%;height:100%}
+#network-container{flex:1;background:var(--bg);position:relative;border-right:1px solid var(--border);overflow:hidden}
+#mynetwork{width:100%;height:100%;min-height:500px}
 /* Sidebar */
 .sidebar{width:340px;flex-shrink:0;background:var(--bg2);display:flex;flex-direction:column;overflow:hidden}
 .sidebar-tabs{display:flex;border-bottom:1px solid var(--border)}
@@ -372,8 +371,21 @@ const options = {
   layout:{ randomSeed: 2 }
 };
 const network = new vis.Network(container, data, options);
-// Fit view after a short delay to ensure canvas is ready
-setTimeout(function(){ network.fit({ animation: { duration: 800, easingFunction: 'easeInOutQuad' } }); }, 300);
+
+// Force correct canvas size then fit — do it at multiple delays to handle slow CSS layout
+function fitNetwork() {
+  network.redraw();
+  network.fit({ animation: { duration: 600, easingFunction: 'easeInOutQuad' } });
+}
+setTimeout(fitNetwork, 100);
+setTimeout(fitNetwork, 400);
+setTimeout(fitNetwork, 900);
+
+// Also refit on window resize
+window.addEventListener('resize', function() {
+  network.redraw();
+  network.fit();
+});
 
 // Click handler
 network.on('click', params => {
